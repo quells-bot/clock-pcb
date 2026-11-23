@@ -248,7 +248,7 @@ J1: a row of plated holes at 2.54 mm pitch, each labelled on silkscreen.
 
 Current on LOAD/GND peaks around 150 mA while the motors move (BOM power
 budget: ~132 mA from the battery), so 22 AWG has plenty of margin. Use
-≥ 0.8 mm traces for LOAD, VSYS, 5V_SW and GND; signal traces can be thinner.
+0.3 mm minimum for every trace (tscircuit's autorouter ignores per-net widths). 0.3 mm of 1 oz outer copper carries ~1 A at a 10 °C rise, several times the ~150 mA peak.
 
 ## Test points and markings
 
