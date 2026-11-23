@@ -3,7 +3,7 @@
 Two boards for an analog clock driven by a BKA30D-R5 dual-shaft stepper.
 
 - **front/**: motor + hand-home sensor board ([front/front.circuit.tsx](front/front.circuit.tsx))
-- **back/** (todo): brain board
+- **back/**: brain board, a carrier for the Pico 2, two TB6612s, MiniBoost and DS3231 ([back/brain.circuit.tsx](back/brain.circuit.tsx), fab notes in [back/fab/](back/fab/README.md))
 
 Shared footprints live in [lib/](lib/). Datasheets are in [components/](components/).
 
@@ -13,6 +13,7 @@ Shared footprints live in [lib/](lib/). Datasheets are in [components/](componen
 bun install            # once
 tsci build --pcb-png   # build + render to dist/
 tsci dev               # interactive preview
+bun test               # netlist, footprint and PCB checks for the brain board
 tsci export front/front.circuit.tsx -f kicad_zip -o dist/front-kicad.zip
 ```
 

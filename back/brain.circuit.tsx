@@ -25,7 +25,7 @@ const AXIAL_RES = "axial_p0.4in_id0.8mm_od1.6mm"
 const SCHOTTKY_1A = "axial_p0.4in_id1.2mm_od2mm" // 1N5817, DO-41
 const SCHOTTKY_SIGNAL = "axial_p0.3in_id0.8mm_od1.6mm" // BAT43, DO-35
 const CERAMIC = "radial_p2.54mm"
-const ELECTROLYTIC = "radial_p2.5mm"
+const ELECTROLYTIC = "radial_p2.5mm_id0.9mm_od1.6mm" // 100 µF 16 V, ~0.6 mm leads
 
 const pico = (n: number) => `U1.${gp(n)}`
 
@@ -102,7 +102,23 @@ const PICO_GNDS = ["GND1", "GND2", "GND3", "GND4", "GND5", "GND6", "GND7", "AGND
 const T = ({ from, to }: { from: string; to: string }) => <trace from={from} to={to} />
 
 export default () => (
-  <board width="100mm" height="96mm" layers={2} defaultTraceWidth="0.3mm" minTraceWidth="0.3mm" routeRemaining pcbStyle={{ silkscreenFontSize: 1 }}>
+  <board
+    width="100mm"
+    height="96mm"
+    layers={2}
+    defaultTraceWidth="0.3mm"
+    minTraceWidth="0.3mm"
+    // PCBWay standard process (0.3 mm drill, 0.15 mm ring); the router defaults to 0.2/0.3 mm vias
+    minViaHoleDiameter="0.3mm"
+    minViaPadDiameter="0.6mm"
+    minViaHoleEdgeToViaHoleEdgeClearance="1mm"
+    minTraceToPadEdgeClearance="0.25mm"
+    minViaEdgeToPadEdgeClearance="0.3mm"
+    minTraceToHoleEdgeClearance="0.3mm"
+    minBoardEdgeClearance="0.5mm"
+    routeRemaining
+    pcbStyle={{ silkscreenFontSize: 1, viaPadDiameter: "0.6mm", viaHoleDiameter: "0.3mm" }}
+  >
     <net name="LOAD" isPowerNet />
     <net name="VSYS" isPowerNet />
     <net name="V5_SW" isPowerNet />
@@ -111,7 +127,9 @@ export default () => (
 
     {/* M3 mounting holes, 4 mm in from each corner */}
     {[[-46, 44], [46, 44], [-46, -44], [46, -44]].map(([x, y]) => (
-      <hole key={`${x},${y}`} pcbX={x} pcbY={y} diameter={3.2} />
+      <Fragment key={`${x},${y}`}>
+        <hole pcbX={x} pcbY={y} diameter={3.2} />
+      </Fragment>
     ))}
 
     {/* ---------- Modules ---------- */}

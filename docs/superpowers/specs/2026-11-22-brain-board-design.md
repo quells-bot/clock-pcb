@@ -1,6 +1,6 @@
 # Brain board design
 
-Date: 2026-11-22. Status: draft for review.
+Date: 2026-11-22. Status: implemented (back/, Rev 1.0).
 
 ## Intent
 
