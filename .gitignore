@@ -15,3 +15,8 @@ fp-info-cache
 # SamacSys TCRT5000 ECAD library: its license forbids redistributing it,
 # so it stays local only. See components/README.md for where to get it.
 components/LIB_TCRT5000/
+.tscircuit-build-history/
+checks/
+
+# tsci init installs its agent skill twice; keep the .claude copy only
+.agents/
