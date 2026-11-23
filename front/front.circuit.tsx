@@ -28,7 +28,7 @@ const MINUTE_SENSOR = { x: 0, y: 50 }
 const LED_RESISTOR = "220"
 
 // Board extents (mm, relative to the shaft)
-const LEFT = -26
+const LEFT = -21
 const RIGHT = 37
 const BOTTOM = -30
 const TOP = 57
@@ -100,7 +100,30 @@ export default () => (
     <TCRT5000 name="U2" pcbX={U2.x} pcbY={U2.y} pcbRotation={U2.rotation} />
     <resistor name="R2" resistance={LED_RESISTOR} footprint="axial_p0.4in_id0.8mm_od1.6mm" pcbX={R2.x} pcbY={R2.y} pcbRotation={R2.rotation} />
 
-    <connector name="J1" footprint="pinrow14_p2.54mm_id1mm_od1.8mm" pinLabels={wirePads} pcbX={J1.x} pcbY={J1.y} />
+    {/* Wire pads drawn by hand so the footprint carries no "J1" silkscreen
+        text to crowd the pad labels */}
+    <connector
+      name="J1"
+      pinLabels={wirePads}
+      pcbX={J1.x}
+      pcbY={J1.y}
+      footprint={
+        // wires come in from the back of the board, towards the brain board
+        <footprint insertionDirection="from_below">
+          {PAD_ORDER.map((n, i) => (
+            <platedhole
+              key={n}
+              portHints={[`pin${i + 1}`]}
+              pcbX={pad(n).x - J1.x}
+              pcbY={0}
+              shape="circle"
+              holeDiameter={1}
+              outerDiameter={1.8}
+            />
+          ))}
+        </footprint>
+      }
+    />
 
     {/* Motor B leads: out and down the outside of the motor */}
     <PadTrace name="B3" to=".M1 > .B3" via={[p(-19, -21), p(-19, M.B3.y), M.B3]} />
@@ -151,10 +174,24 @@ export default () => (
       pcbPath={pcbPathFor(J1, [pad("GND1"), p(pad("GND1").x, J1.y - 2), p(pad("GND2").x, J1.y - 2), pad("GND2")])}
     />
 
+    {/* Pad labels, alternating between two rows so neighbours never touch */}
+    {PAD_ORDER.map((n, i) => (
+      <silkscreentext
+        key={n}
+        text={n}
+        // GND2 is the last pad, so it sits beside it, in line with the holes
+        pcbX={n === "GND2" ? pad(n).x + 3.4 : pad(n).x}
+        pcbY={n === "GND2" ? J1.y : J1.y + (i % 2 === 0 ? 1.8 : 3.3)}
+        fontSize={1}
+      />
+    ))}
+
     {/* Dial-side markings */}
-    <silkscreentext text="HOUR HOME (3:00)" pcbX={30} pcbY={6} fontSize={1} />
-    <silkscreentext text="MIN HOME (12:00)" pcbX={11} pcbY={50} fontSize={1} />
-    <silkscreenline x1={-2} y1={0} x2={2} y2={0} strokeWidth={0.15} />
-    <silkscreenline x1={0} y1={-2} x2={0} y2={2} strokeWidth={0.15} />
+    <silkscreentext text="HOUR HOME" pcbX={30} pcbY={6} fontSize={1} />
+    <silkscreentext text="MIN HOME" pcbX={9} pcbY={50} fontSize={1} />
+
+    {/* Board identifier, in the open upper-right corner */}
+    <silkscreentext text="CLOCK FRONT" pcbX={27} pcbY={53} fontSize={1.2} />
+    <silkscreentext text="Rev 1.0" pcbX={27} pcbY={51} fontSize={1.2} />
   </board>
 )
