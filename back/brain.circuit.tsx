@@ -102,7 +102,7 @@ const PICO_GNDS = ["GND1", "GND2", "GND3", "GND4", "GND5", "GND6", "GND7", "AGND
 const T = ({ from, to }: { from: string; to: string }) => <trace from={from} to={to} />
 
 export default () => (
-  <board width="100mm" height="96mm" layers={2} defaultTraceWidth="0.3mm" minTraceWidth="0.3mm" routeRemaining>
+  <board width="100mm" height="96mm" layers={2} defaultTraceWidth="0.3mm" minTraceWidth="0.3mm" routeRemaining pcbStyle={{ silkscreenFontSize: 1 }}>
     <net name="LOAD" isPowerNet />
     <net name="VSYS" isPowerNet />
     <net name="V5_SW" isPowerNet />
@@ -280,6 +280,14 @@ export default () => (
     <T from={pico(GPIO.BTN_WAKE)} to="net.BTN_WAKE" />
     <T from="R17.pin1" to="net.BTN_WAKE" />
     <T from="R17.pin2" to="net.V3_3" />
+
+    {/* ---------- Markings ---------- */}
+    <silkscreentext text="CLOCK BRAIN" pcbX={-25} pcbY={-42.6} fontSize={1.2} />
+    <silkscreentext text="Rev 1.0" pcbX={-25} pcbY={-44.8} fontSize={1.2} />
+    <silkscreentext text="CUT RTC LED JUMPER" pcbX={-36} pcbY={-24} fontSize={1} />
+    <silkscreentext text="5V_SW: NEVER TO VSYS" pcbX={42} pcbY={37} fontSize={1} />
+    <silkscreentext text="MOTOR A" pcbX={-10.4} pcbY={19} fontSize={1} />
+    <silkscreentext text="MOTOR B" pcbX={16.6} pcbY={19} fontSize={1} />
 
     {/* ---------- Test points ---------- */}
     {[
