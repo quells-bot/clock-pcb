@@ -9,11 +9,17 @@ tsci export front/front.circuit.tsx -f gerbers -o "$PWD/dist/front-gerbers.zip"
 
 | | |
 | --- | --- |
-| Board | 58 × 87 mm, 2 layers, 1.6 mm FR4 |
+| Board | 58 × 87 mm, 2 layers, 1.2 mm FR4 |
 | Traces | 0.3 mm, top layer only, no vias |
 | Plated holes | 34 (0.8, 0.9 and 1.0 mm) |
 | Non-plated holes | 14 (1.0, 2.3, 2.5, 3.8 and 6.8 mm) |
 | Parts | all through-hole, hand-soldered (no paste layers needed) |
+
+## Orders
+
+| Rev | Date | Fab | Notes |
+| --- | --- | --- | --- |
+| 1.0 | 2026-11-22 | PCBWay | 1.2 mm thick: stiffer than 0.8 mm, more motor-lead length to solder than 1.6 mm |
 
 If the board changes, regenerate this zip, bump the `Rev` silkscreen text,
 and rename the file to match.
