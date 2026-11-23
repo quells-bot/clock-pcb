@@ -13,7 +13,7 @@ export const GPIO = {
   BTN_HM: 4,
   BTN_MP: 5,
   BTN_MM: 6,
-  STBY: 7, // both drivers; leave high while asleep
+  DRV_PWR: 7, // TB6612 logic supply (VCC, PWMx, STBY) for both drivers; low while asleep
   BOOST_EN: 8, // high = 5V_SW on
   LED_M: 9,
   CHG: 10, // active low

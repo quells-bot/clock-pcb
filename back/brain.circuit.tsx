@@ -17,8 +17,8 @@ import { GPIO, gp } from "./pinmap"
  *
  * Power: charger LOAD -> D1 -> Pico VSYS, and LOAD -> MiniBoost -> 5V_SW for
  * the motor drivers only. Boost EN is pulled low (R1), so the motors have no
- * supply until the Pico drives GP8 high. STBY deliberately has no pull-down:
- * the TB6612s' own 10 kΩ pull-ups would make it leak ~0.55 mA in sleep.
+ * supply until the Pico drives GP8 high. The TB6612s' logic supply (VCC,
+ * PWMx, STBY) comes from GP7, so they draw nothing while the Pico sleeps.
  */
 
 const AXIAL_RES = "axial_p0.4in_id0.8mm_od1.6mm"
@@ -82,6 +82,19 @@ const at = (name: string) => {
   return { pcbX, pcbY, pcbRotation }
 }
 
+/**
+ * Silkscreen "K" beside a diode's cathode pad (pin 2, at +pitch/2 along the
+ * part's axis), offset sideways so it clears neighbouring parts.
+ */
+const CathodeMark = ({ name, pitch }: { name: string; pitch: number }) => {
+  const [x, y, rot] = P[name]
+  const r = (rot * Math.PI) / 180
+  const kx = x + (pitch / 2) * Math.cos(r)
+  const ky = y + (pitch / 2) * Math.sin(r)
+  // sideways: perpendicular to the axis
+  return <silkscreentext text="K" pcbX={kx + 1.9 * Math.sin(r)} pcbY={ky - 1.9 * Math.cos(r)} fontSize={1} />
+}
+
 /** The four button channels: J3 pad, series R, pull-up, cap, wake diode, GPIO */
 const BUTTONS = [
   { pad: "HP", series: "R13", pullup: "R9", cap: "C11", diode: "D2", gpio: GPIO.BTN_HP },
@@ -133,7 +146,7 @@ export default () => (
     ))}
 
     {/* ---------- Modules ---------- */}
-    <Pico2 name="U1" pcbX={-36} pcbY={16} />
+    <Pico2 name="U1" pcbX={-36} pcbY={14.5} />
     <TB6612Breakout name="U2" pcbX={-11} pcbY={22} />
     <TB6612Breakout name="U3" pcbX={16} pcbY={22} />
     <MiniBoost name="U4" pcbX={40} pcbY={26} />
@@ -152,6 +165,7 @@ export default () => (
 
     {/* ---------- Power ---------- */}
     <diode name="D1" {...at("D1")} footprint={SCHOTTKY_1A} manufacturerPartNumber="1N5817" />
+    <CathodeMark name="D1" pitch={10.16} />
     <capacitor name="C1" {...at("C1")} capacitance="100uF" polarized footprint={ELECTROLYTIC} maxVoltageRating="16V" />
     <T from="J2.LOAD" to="net.LOAD" />
     <T from="U4.VIN" to="net.LOAD" />
@@ -166,9 +180,10 @@ export default () => (
     <T from=".U1 > .3V3" to="net.V3_3" />
     {["U2", "U3"].map((u) => (
       <Fragment key={u}>
-        <T from={`${u}.VCC`} to="net.V3_3" />
-        <T from={`${u}.PWMA`} to="net.V3_3" />
-        <T from={`${u}.PWMB`} to="net.V3_3" />
+        <T from={`${u}.VCC`} to="net.DRV_PWR" />
+        <T from={`${u}.PWMA`} to="net.DRV_PWR" />
+        <T from={`${u}.PWMB`} to="net.DRV_PWR" />
+        <T from={`${u}.STBY`} to="net.DRV_PWR" />
         <T from={`${u}.GND1`} to="net.GND" />
         <T from={`${u}.GND2`} to="net.GND" />
         <T from={`${u}.GND3`} to="net.GND" />
@@ -188,7 +203,7 @@ export default () => (
         Tied by net, not pin to pin: tscircuit caps a direct cap-to-pin trace
         at 1 mm. Placement keeps them beside their driver's socket. */}
     {[
-      ["C2", "net.V3_3", "100nF"], ["C3", "net.V3_3", "100nF"],
+      ["C2", "net.DRV_PWR", "100nF"], ["C3", "net.DRV_PWR", "100nF"],
       ["C4", "net.V5_SW", "100nF"], ["C5", "net.V5_SW", "100nF"],
       ["C6", "net.V5_SW", "10uF"], ["C7", "net.V5_SW", "10uF"],
     ].map(([name, pin, value]) => (
@@ -200,8 +215,11 @@ export default () => (
     ))}
 
     {/* ---------- Motor drivers ---------- */}
-    <T from={pico(GPIO.STBY)} to="U2.STBY" />
-    <T from={pico(GPIO.STBY)} to="U3.STBY" />
+    {/* Driver logic supply from GP7: a powered TB6612 draws ~1 mA even in
+        standby, and its onboard STBY pull-up leaks if STBY is held low. GP7
+        low = both chips fully off. Firmware: GP7 high before boost EN, and
+        all IN pins low before GP7 goes low. */}
+    <T from={pico(GPIO.DRV_PWR)} to="net.DRV_PWR" />
     <T from={pico(GPIO.A_AIN1)} to="U2.AIN1" />
     <T from={pico(GPIO.A_AIN2)} to="U2.AIN2" />
     <T from={pico(GPIO.A_BIN1)} to="U2.BIN1" />
@@ -283,6 +301,7 @@ export default () => (
         <resistor name={b.pullup} {...at(b.pullup)} resistance="10k" footprint={AXIAL_RES} />
         <capacitor name={b.cap} {...at(b.cap)} capacitance="1uF" footprint={CERAMIC} />
         <diode name={b.diode} {...at(b.diode)} footprint={SCHOTTKY_SIGNAL} manufacturerPartNumber="BAT43" />
+        <CathodeMark name={b.diode} pitch={7.62} />
         <T from={`J3.${b.pad}`} to={`${b.series}.pin1`} />
         <T from={`J3.${b.pad}`} to={`${b.diode}.cathode`} />
         <T from={`${b.series}.pin2`} to={`net.BTN_${b.pad}`} />
@@ -303,7 +322,7 @@ export default () => (
     <silkscreentext text="CLOCK BRAIN" pcbX={-25} pcbY={-42.6} fontSize={1.2} />
     <silkscreentext text="Rev 1.0" pcbX={-25} pcbY={-44.8} fontSize={1.2} />
     <silkscreentext text="CUT RTC LED JUMPER" pcbX={-36} pcbY={-24} fontSize={1} />
-    <silkscreentext text="5V_SW: NEVER TO VSYS" pcbX={42} pcbY={37} fontSize={1} />
+    <silkscreentext text="5V_SW: NEVER TO VSYS" pcbX={42} pcbY={40.5} fontSize={1} />
     <silkscreentext text="MOTOR A" pcbX={-10.4} pcbY={19} fontSize={1} />
     <silkscreentext text="MOTOR B" pcbX={16.6} pcbY={19} fontSize={1} />
 

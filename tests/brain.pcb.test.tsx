@@ -73,3 +73,14 @@ test("electrolytic C1 has 0.9 mm holes", () => {
 test("no SMD pads", () => {
   expect(cj.filter((e) => e.type === "pcb_smtpad").length).toBe(0)
 })
+
+// An M3 screw head or hex standoff is ~5.5 mm across; keep it off every
+// socket and part: no plated hole within 4.2 mm of a mounting-hole centre.
+test("M3 mounting holes are clear of every pad", () => {
+  const m3 = cj.filter((e) => e.type === "pcb_hole" && Math.abs(e.hole_diameter - 3.2) < 0.01)
+  const pads = cj.filter((e) => e.type === "pcb_plated_hole")
+  const close = m3.flatMap((h) =>
+    pads.filter((p) => Math.hypot(p.x - h.x, p.y - h.y) < 4.2).map((p) => `(${h.x}, ${h.y}) to (${p.x.toFixed(2)}, ${p.y.toFixed(2)})`),
+  )
+  expect(close).toEqual([])
+})

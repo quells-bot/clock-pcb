@@ -24,14 +24,23 @@ describe("power", () => {
     ["U4.VOUT", "U2.VM"],
     ["U4.VOUT", "U3.VM"],
     ["U4.VOUT", "C1.pin1"],
-    ["U1.3V3", "U2.VCC"],
-    ["U1.3V3", "U3.VCC"],
     ["U1.3V3", "U5.VIN"],
-    ["U1.3V3", "U2.PWMA"],
-    ["U1.3V3", "U2.PWMB"],
-    ["U1.3V3", "U3.PWMA"],
-    ["U1.3V3", "U3.PWMB"],
   ])
+})
+
+// The TB6612s' logic supply comes from GP7 (DRV_PWR), not the always-on 3V3:
+// a powered TB6612 draws ~1 mA even in standby, and its onboard 10 kΩ STBY
+// pull-up leaks whenever STBY is held low. With GP7 low the chips are fully off.
+describe("driver logic power", () => {
+  connectedPairs(
+    ["U2", "U3"].flatMap((u) =>
+      ["VCC", "PWMA", "PWMB", "STBY"].map((pin) => [pico(GPIO.DRV_PWR), `${u}.${pin}`] as [string, string]),
+    ),
+  )
+  test("driver VCC is not on the always-on 3V3 rail", () => {
+    expect(isConnected(cj, "U2.VCC", "U1.3V3")).toBe(false)
+    expect(isConnected(cj, "U3.VCC", "U1.3V3")).toBe(false)
+  })
 })
 
 describe("ground", () => {
@@ -58,8 +67,6 @@ describe("RTC", () => {
 
 describe("drivers", () => {
   connectedPairs([
-    [pico(GPIO.STBY), "U2.STBY"],
-    [pico(GPIO.STBY), "U3.STBY"],
     [pico(GPIO.BOOST_EN), "U4.EN"],
     ["U4.EN", "R1.pin1"],
     ["R1.pin2", "U1.GND1"],
@@ -201,8 +208,8 @@ describe("standby leakage", () => {
     expect(onGnd).toEqual(["R1", "R6"])
   })
 
-  test("no resistor on the STBY net", () => {
-    expect(netMembers(cj, pico(GPIO.STBY)).filter((m) => /^R\d+\./.test(m))).toEqual([])
+  test("no resistor on the driver power / STBY net", () => {
+    expect(netMembers(cj, pico(GPIO.DRV_PWR)).filter((m) => /^R\d+\./.test(m))).toEqual([])
   })
 
   test("EN has nothing to 3V3", () => {

@@ -26,6 +26,8 @@ export type ModuleSpec<L extends string> = {
   title: string
   /** Where to put the title (default: the outline centre) */
   titleAt?: Pt
+  /** Pins to name on silkscreen (just inboard of the pin), for parts that fit either way round */
+  named?: readonly L[]
   extras?: React.ReactNode
 }
 
@@ -79,6 +81,15 @@ export const ModuleSocket = <L extends string>({
             pcbY={spec.titleAt?.y ?? 0}
             fontSize={1.2}
           />
+          {(spec.named ?? []).map((label) => {
+            const p = pins.find((q) => q.label === label)!
+            // 1.9 mm from the pin, towards the middle of the module
+            return (
+              <Fragment key={`name-${label}`}>
+                <silkscreentext text={label} pcbX={p.x} pcbY={p.y + 1.9 * Math.sign(-p.y || 1)} fontSize={1} />
+              </Fragment>
+            )
+          })}
           {spec.extras}
         </footprint>
       }

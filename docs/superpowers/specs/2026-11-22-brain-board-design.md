@@ -102,7 +102,7 @@ signal right, and to make the modules easy to swap.
 | LOAD | charger OUT (≤ 4.4 V) via cable | MiniBoost IN; 1N5817 anode |
 | VSYS | 1N5817 cathode | Pico VSYS (pin 39) |
 | 5V_SW | MiniBoost OUT (5.2 V) | both TB6612 Vmotor; 100 µF ≥ 10 V electrolytic bulk |
-| 3V3 | Pico 3V3 OUT (pin 36) | TB6612 Vcc (both), RTC Vin, all pull-ups |
+| 3V3 | Pico 3V3 OUT (pin 36) | RTC Vin, pull-ups (TB6612 Vcc comes from GP7) |
 | VBAT | charger LIPO pin via cable | divider to ADC only (sense, no load) |
 | GND | one ground for everything | |
 
@@ -121,17 +121,15 @@ signal right, and to make the modules easy to swap.
   This divider draws ~42 µA from LOAD at all times (if the onboard pull-up is
   100 kΩ). That's ~1.6 % of the budget; accepted. Count it in the power
   budget.
-- **STBY (shared by both TB6612s): no external pull-down.** (My call, from
-  the review.) Each #2448 pulls STBY up to Vcc with 10 kΩ onboard, two in
-  parallel = 5 kΩ on the always-on 3V3 rail. Holding STBY low against that,
-  by resistor or by GPIO, costs ~0.55–0.66 mA continuously, about +21 %
-  average draw. Instead, the boost EN pull-down is the hardware safety: with
-  EN low the MiniBoost's true output disconnect leaves Vmotor at 0 V, so the
-  motors can't move during boot or sleep whatever STBY does. Firmware leaves
-  STBY high (or the GPIO as an input) while asleep, so no current flows, and
-  drives all IN pins low before sleeping. Builder: confirm the TPS61023 /
-  MiniBoost really disconnects the output to ~0 V in shutdown; if it
-  doesn't, stop and raise it.
+- **TB6612 logic supply from GP7 (DRV_PWR), not 3V3.** (Changed after the
+  final review.) Each #2448 pulls STBY up to its VCC with 10 kΩ, and a powered
+  TB6612 draws ~1 mA even in standby (datasheet ICC, from memory; the PDF's
+  tables wouldn't extract). Leaving the drivers on 3V3 would cost ~0.7–2.2 mA
+  in sleep, nearly the whole 2.6 mA budget. So GP7 feeds VCC, PWMA, PWMB and
+  STBY on both drivers: GP7 low = fully off. No external pull-down anywhere;
+  the boost EN pull-down still keeps Vmotor at 0 V at boot. Builder: confirm
+  the TPS61023 / MiniBoost really disconnects the output in shutdown (bench
+  step in back/fab/README.md).
 - **RTC INT/SQW:** 10 kΩ to 3V3 (open drain, no onboard pull-up).
 - **Charger CHG, PGOOD:** 100 kΩ each to 3V3 (open drain, active low). The
   4755's own LEDs sit on those lines; check they still read cleanly as a
@@ -153,7 +151,7 @@ signal right, and to make the modules easy to swap.
 - Coil pairs A1-A2, A3-A4, B1-B2, B3-B4 were verified with a meter.
   Builder: check `components/bka30d.pdf` for which motor turns which shaft
   and label the drivers MIN/HOUR on silkscreen.
-- **PWMA and PWMB tied to 3V3** (as in the breadboard diagram). Microstepping,
+- **PWMA and PWMB tied high** (to DRV_PWR, as in the breadboard diagram). Microstepping,
   if wanted, is done by PWM on the IN1/IN2 pins. Every RP2350 GPIO has PWM,
   and each IN1/IN2 pair should land on one PWM slice (consecutive even/odd
   GPIOs). This frees four GPIOs for the charger status lines.
@@ -208,7 +206,7 @@ rest.
 | GP0 / GP1 | I²C0 SDA / SCL (RTC) |
 | GP2 | RTC SQW (wake) |
 | GP3–GP6 | Buttons H+, H−, M+, M− |
-| GP7 | STBY, both drivers (left high while asleep) |
+| GP7 | DRV_PWR: TB6612 VCC, PWMA/B and STBY, both drivers |
 | GP8 | Boost EN |
 | GP9 | LED_M |
 | GP10 | Charger CHG |

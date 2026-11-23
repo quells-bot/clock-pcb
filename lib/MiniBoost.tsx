@@ -13,6 +13,7 @@ const spec: ModuleSpec<(typeof PINS)[number]> = {
   pins: pinRow(PINS, 3.81, -6.35, -2.54, 0),
   width: 11.43,
   height: 17.78,
+  named: ["EN", "VIN"],
   title: "BOOST",
   titleAt: { x: 0, y: 1 },
 }
