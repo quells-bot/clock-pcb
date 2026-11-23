@@ -63,22 +63,48 @@ const screws: Array<[number, number]> = [
   [15.5, 13.5],
 ]
 
-// Body outline: 59.5 x 31.5 mm stadium centred on the motor (SCAD origin)
-const bodyOutline = (() => {
+// Body outline: 59.5 x 31.5 mm stadium centred on the motor (SCAD origin),
+// sampled finely and broken into runs wherever it would cross a hole.
+const bodyOutlineRuns = (() => {
   const r = 31.5 / 2
   const c = 59.5 / 2 - r
+  const step = 0.4
   const pts: Array<{ x: number; y: number }> = []
-  const n = 24
-  for (let i = 0; i <= n; i++) {
-    const a = -Math.PI / 2 + (Math.PI * i) / n
-    pts.push(fromScad(c + r * Math.cos(a), r * Math.sin(a)))
+  const arc = (cx: number, a0: number) => {
+    const n = Math.ceil((Math.PI * r) / step)
+    for (let i = 0; i <= n; i++) {
+      const a = a0 + (Math.PI * i) / n
+      pts.push({ x: cx + r * Math.cos(a), y: r * Math.sin(a) })
+    }
   }
-  for (let i = 0; i <= n; i++) {
-    const a = Math.PI / 2 + (Math.PI * i) / n
-    pts.push(fromScad(-c + r * Math.cos(a), r * Math.sin(a)))
+  const line = (x0: number, x1: number, y: number) => {
+    const n = Math.ceil(Math.abs(x1 - x0) / step)
+    for (let i = 1; i < n; i++) pts.push({ x: x0 + ((x1 - x0) * i) / n, y })
   }
+  arc(c, -Math.PI / 2)
+  line(c, -c, r)
+  arc(-c, Math.PI / 2)
+  line(-c, c, -r)
   pts.push(pts[0])
-  return pts
+
+  const keepouts = [
+    ...pegs.map(([x, y]) => ({ x, y, r: PEG_HOLE / 2 + 0.3 })),
+    ...screws.map(([x, y]) => ({ x, y, r: SCREW_HOLE / 2 + 0.3 })),
+  ]
+  const clear = (q: { x: number; y: number }) =>
+    keepouts.every((k) => Math.hypot(q.x - k.x, q.y - k.y) > k.r)
+
+  const runs: Array<Array<{ x: number; y: number }>> = []
+  let run: Array<{ x: number; y: number }> = []
+  for (const q of pts) {
+    if (clear(q)) run.push(fromScad(q.x, q.y))
+    else {
+      if (run.length > 1) runs.push(run)
+      run = []
+    }
+  }
+  if (run.length > 1) runs.push(run)
+  return runs
 })()
 
 /** Lead positions in board (dial-side) coordinates, for planning traces. */
@@ -123,7 +149,9 @@ export const BKA30D = (props: ChipProps) => (
           return <hole key={`scr${i}`} pcbX={p.x} pcbY={p.y} diameter={SCREW_HOLE} />
         })}
         <hole pcbX={0} pcbY={0} diameter={SHAFT_HOLE} />
-        <silkscreenpath route={bodyOutline} />
+        {bodyOutlineRuns.map((route, i) => (
+          <silkscreenpath key={`outline${i}`} route={route} />
+        ))}
       </footprint>
     }
     {...props}

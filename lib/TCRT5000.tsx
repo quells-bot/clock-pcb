@@ -49,18 +49,32 @@ export const TCRT5000 = (props: ChipProps<typeof pinLabels>) => (
         <hole pcbX={0} pcbY={-1.9} diameter={2.5} />
         {/* locating peg */}
         <hole pcbX={-4.65} pcbY={-2.45} diameter={1.0} />
-        {/* 10.2 x 5.8 body */}
+        {/* 10.2 x 5.8 body, broken where the clip holes cross its long edges
+            and around the locating peg in the bottom-left corner */}
         <silkscreenpath
           route={[
-            { x: -5.1, y: -2.9 },
-            { x: 5.1, y: -2.9 },
-            { x: 5.1, y: 2.9 },
+            { x: -1.1, y: 2.9 },
             { x: -5.1, y: 2.9 },
-            { x: -5.1, y: -2.9 },
+            { x: -5.1, y: -1.6 },
           ]}
         />
-        <silkscreentext text="RX" pcbX={-4.0} pcbY={0.6} fontSize={0.8} />
-        <silkscreentext text="IR" pcbX={4.1} pcbY={0} fontSize={0.8} />
+        <silkscreenpath
+          route={[
+            { x: -3.8, y: -2.9 },
+            { x: -1.1, y: -2.9 },
+          ]}
+        />
+        <silkscreenpath
+          route={[
+            { x: 1.1, y: 2.9 },
+            { x: 5.1, y: 2.9 },
+            { x: 5.1, y: -2.9 },
+            { x: 1.1, y: -2.9 },
+          ]}
+        />
+        {/* detector / emitter side marks, just outside the body above the pins */}
+        <silkscreentext text="RX" pcbX={-2.75} pcbY={3.7} fontSize={0.8} />
+        <silkscreentext text="IR" pcbX={2.75} pcbY={3.7} fontSize={0.8} />
       </footprint>
     }
     {...props}

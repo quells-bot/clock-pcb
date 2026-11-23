@@ -95,10 +95,10 @@ export default () => (
     <BKA30D name="M1" pcbX={0} pcbY={0} layer="bottom" />
 
     <TCRT5000 name="U1" pcbX={U1.x} pcbY={U1.y} pcbRotation={U1.rotation} />
-    <resistor name="R1" resistance={LED_RESISTOR} footprint="axial_p0.4in_id0.8mm_od1.6mm" pcbX={R1.x} pcbY={R1.y} pcbRotation={R1.rotation} />
+    <resistor name="R1" resistance={LED_RESISTOR} footprint="axial_p0.4in_id0.8mm_od1.6mm" pcbStyle={{ silkscreenFontSize: 1 }} pcbX={R1.x} pcbY={R1.y} pcbRotation={R1.rotation} />
 
     <TCRT5000 name="U2" pcbX={U2.x} pcbY={U2.y} pcbRotation={U2.rotation} />
-    <resistor name="R2" resistance={LED_RESISTOR} footprint="axial_p0.4in_id0.8mm_od1.6mm" pcbX={R2.x} pcbY={R2.y} pcbRotation={R2.rotation} />
+    <resistor name="R2" resistance={LED_RESISTOR} footprint="axial_p0.4in_id0.8mm_od1.6mm" pcbStyle={{ silkscreenFontSize: 1 }} pcbX={R2.x} pcbY={R2.y} pcbRotation={R2.rotation} />
 
     {/* Wire pads drawn by hand so the footprint carries no "J1" silkscreen
         text to crowd the pad labels */}
