@@ -27,8 +27,9 @@ const fromScad = (x: number, y: number) => ({ x: -y, y: 9.5 - x })
 const LEAD_DRILL = 0.8
 const LEAD_PAD = 1.6
 
-// Datasheet: pegs are Ø2.5 with a recommended Ø3.0 PCB hole
-const PEG_HOLE = 3.0
+// Pegs are Ø2.5 (datasheet suggests a Ø3.0 hole). Deliberately oversized: the
+// screws locate the board to the motor, so the pegs only need to clear.
+const PEG_HOLE = 3.8
 // Fit-checked shaft clearance hole
 const SHAFT_HOLE = 6.8
 // Optional ST2.0 self-tapping screws
@@ -79,6 +80,11 @@ const bodyOutline = (() => {
   pts.push(pts[0])
   return pts
 })()
+
+/** Lead positions in board (dial-side) coordinates, for planning traces. */
+export const BKA30D_PIN_POSITIONS = Object.fromEntries(
+  leads.map((l) => [l.label, { x: l.scad[1], y: 9.5 - l.scad[0] }]),
+) as Record<"A1" | "A2" | "A3" | "A4" | "B1" | "B2" | "B3" | "B4", { x: number; y: number }>
 
 export const pinLabels = Object.fromEntries(
   leads.map((l) => [l.pin, l.label]),

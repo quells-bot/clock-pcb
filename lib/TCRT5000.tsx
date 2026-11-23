@@ -15,6 +15,14 @@ const pinLabels = {
   pin4: "A", // IR LED anode
 } as const
 
+/** Pin positions in the part's own frame (before pcbRotation). */
+export const TCRT5000_PIN_POSITIONS = {
+  C: { x: -2.75, y: 1.27 },
+  E: { x: -2.75, y: -1.27 },
+  K: { x: 2.75, y: -1.27 },
+  A: { x: 2.75, y: 1.27 },
+} as const
+
 export const TCRT5000 = (props: ChipProps<typeof pinLabels>) => (
   <chip
     manufacturerPartNumber="TCRT5000"
@@ -25,10 +33,17 @@ export const TCRT5000 = (props: ChipProps<typeof pinLabels>) => (
     }}
     footprint={
       <footprint>
-        <platedhole portHints={["pin1"]} pcbX={-2.75} pcbY={1.27} shape="circle" holeDiameter={0.9} outerDiameter={1.6} />
-        <platedhole portHints={["pin2"]} pcbX={-2.75} pcbY={-1.27} shape="circle" holeDiameter={0.9} outerDiameter={1.6} />
-        <platedhole portHints={["pin3"]} pcbX={2.75} pcbY={-1.27} shape="circle" holeDiameter={0.9} outerDiameter={1.6} />
-        <platedhole portHints={["pin4"]} pcbX={2.75} pcbY={1.27} shape="circle" holeDiameter={0.9} outerDiameter={1.6} />
+        {(["C", "E", "K", "A"] as const).map((label, i) => (
+          <platedhole
+            key={label}
+            portHints={[`pin${i + 1}`]}
+            pcbX={TCRT5000_PIN_POSITIONS[label].x}
+            pcbY={TCRT5000_PIN_POSITIONS[label].y}
+            shape="circle"
+            holeDiameter={0.9}
+            outerDiameter={1.6}
+          />
+        ))}
         {/* mounting clips */}
         <hole pcbX={0} pcbY={1.9} diameter={2.5} />
         <hole pcbX={0} pcbY={-1.9} diameter={2.5} />
