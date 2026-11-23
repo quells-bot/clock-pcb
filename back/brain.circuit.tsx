@@ -29,6 +29,59 @@ const ELECTROLYTIC = "radial_p2.5mm"
 
 const pico = (n: number) => `U1.${gp(n)}`
 
+/** Placement of every small part: [x, y, rotation] in board mm (origin = centre) */
+const P: Record<string, [number, number, number]> = {
+  D1: [38, 4, 0],
+  C1: [30, 12, 0],
+  R1: [46, 10, 90],
+  R2: [-36, -15, 0],
+  R3: [36, -4, 0],
+  R4: [36, -9, 0],
+  R5: [36, -14, 0],
+  R6: [36, -19, 0],
+  C8: [36, -24, 0],
+  R7: [-20, 1, 90],
+  R8: [-16, 1, 90],
+  C9: [-12, 1, 90],
+  C10: [-8, 1, 90],
+  R9: [-20, -14, 90],
+  R10: [-16, -14, 90],
+  R11: [-12, -14, 90],
+  R12: [-8, -14, 90],
+  C11: [-4, -14, 90],
+  C12: [0, -14, 90],
+  C13: [4, -14, 90],
+  C14: [8, -14, 90],
+  R17: [12, -14, 90],
+  R13: [-20, -28, 90],
+  R14: [-16, -28, 90],
+  R15: [-12, -28, 90],
+  R16: [-8, -28, 90],
+  D2: [-4, -28, 90],
+  D3: [0, -28, 90],
+  D4: [4, -28, 90],
+  D5: [8, -28, 90],
+  C2: [-20, 39, 0],
+  C4: [-15, 39, 0],
+  C6: [-10, 39, 0],
+  C3: [2.5, 30, 90],
+  C5: [2.5, 24, 90],
+  C7: [2.5, 18, 90],
+  TP1: [47, -2, 0],
+  TP2: [47, -6, 0],
+  TP3: [47, -10, 0],
+  TP4: [47, -14, 0],
+  TP5: [47, -18, 0],
+  TP6: [47, -22, 0],
+  TP7: [47, -26, 0],
+}
+
+/** pcbX/pcbY/pcbRotation props for a part from P */
+const at = (name: string) => {
+  const [pcbX, pcbY, pcbRotation] = P[name]
+  return { pcbX, pcbY, pcbRotation }
+}
+
 /** The four button channels: J3 pad, series R, pull-up, cap, wake diode, GPIO */
 const BUTTONS = [
   { pad: "HP", series: "R13", pullup: "R9", cap: "C11", diode: "D2", gpio: GPIO.BTN_HP },
@@ -49,34 +102,39 @@ const PICO_GNDS = ["GND1", "GND2", "GND3", "GND4", "GND5", "GND6", "GND7", "AGND
 const T = ({ from, to }: { from: string; to: string }) => <trace from={from} to={to} />
 
 export default () => (
-  <board width="100mm" height="100mm" layers={2} defaultTraceWidth="0.3mm">
+  <board width="100mm" height="96mm" layers={2} defaultTraceWidth="0.3mm">
     <net name="LOAD" isPowerNet nominalTraceWidth={0.8} />
     <net name="VSYS" isPowerNet nominalTraceWidth={0.8} />
     <net name="V5_SW" isPowerNet nominalTraceWidth={0.8} />
     <net name="V3_3" isPowerNet nominalTraceWidth={0.8} />
     <net name="GND" isGroundNet nominalTraceWidth={0.8} />
 
+    {/* M3 mounting holes, 4 mm in from each corner */}
+    {[[-46, 44], [46, 44], [-46, -44], [46, -44]].map(([x, y]) => (
+      <hole key={`${x},${y}`} pcbX={x} pcbY={y} diameter={3.2} />
+    ))}
+
     {/* ---------- Modules ---------- */}
-    <Pico2 name="U1" pcbX={-35} pcbY={15} />
-    <TB6612Breakout name="U2" pcbX={5} pcbY={20} />
-    <TB6612Breakout name="U3" pcbX={30} pcbY={20} />
-    <MiniBoost name="U4" pcbX={20} pcbY={-15} />
-    <DS3231Breakout name="U5" pcbX={-30} pcbY={-35} />
+    <Pico2 name="U1" pcbX={-36} pcbY={16} />
+    <TB6612Breakout name="U2" pcbX={-11} pcbY={22} />
+    <TB6612Breakout name="U3" pcbX={16} pcbY={22} />
+    <MiniBoost name="U4" pcbX={40} pcbY={26} />
+    <DS3231Breakout name="U5" pcbX={-36} pcbY={-30} />
 
     {/* ---------- Wire pads ---------- */}
-    <WirePads name="J1" pads={PAD_ORDER} pcbX={17} pcbY={45} pcbRotation={180} />
-    <WirePads name="J2" pads={["LOAD", "GND", "VBAT", "CHG", "PGOOD"]} pcbX={35} pcbY={-45} />
+    <WirePads name="J1" pads={PAD_ORDER} pcbX={14} pcbY={42} />
+    <WirePads name="J2" pads={["LOAD", "GND", "VBAT", "CHG", "PGOOD"]} pcbX={32} pcbY={-40} />
     <WirePads
       name="J3"
       pads={["HP", "HM", "MP", "MM", "GND"]}
       silk={["H+", "H-", "M+", "M-", "GND"]}
-      pcbX={-5}
-      pcbY={-45}
+      pcbX={2}
+      pcbY={-40}
     />
 
     {/* ---------- Power ---------- */}
-    <diode name="D1" footprint={SCHOTTKY_1A} manufacturerPartNumber="1N5817" />
-    <capacitor name="C1" capacitance="100uF" polarized footprint={ELECTROLYTIC} maxVoltageRating="16V" />
+    <diode name="D1" {...at("D1")} footprint={SCHOTTKY_1A} manufacturerPartNumber="1N5817" />
+    <capacitor name="C1" {...at("C1")} capacitance="100uF" polarized footprint={ELECTROLYTIC} maxVoltageRating="16V" />
     <T from="J2.LOAD" to="net.LOAD" />
     <T from="U4.VIN" to="net.LOAD" />
     <T from="D1.anode" to="net.LOAD" />
@@ -115,7 +173,7 @@ export default () => (
       ["C6", "U2.VM", "10uF"], ["C7", "U3.VM", "10uF"],
     ].map(([name, pin, value]) => (
       <Fragment key={name}>
-        <capacitor name={name} capacitance={value} footprint={CERAMIC} />
+        <capacitor name={name} {...at(name)} capacitance={value} footprint={CERAMIC} />
         <T from={`${name}.pin1`} to={pin} />
         <T from={`${name}.pin2`} to="net.GND" />
       </Fragment>
@@ -137,7 +195,7 @@ export default () => (
     ))}
 
     {/* Boost enable: 4.7 kΩ against the MiniBoost's 100 kΩ pull-up -> off by default */}
-    <resistor name="R1" resistance="4.7k" footprint={AXIAL_RES} />
+    <resistor name="R1" {...at("R1")} resistance="4.7k" footprint={AXIAL_RES} />
     <T from={pico(GPIO.BOOST_EN)} to="U4.EN" />
     <T from="R1.pin1" to="U4.EN" />
     <T from="R1.pin2" to="net.GND" />
@@ -147,13 +205,13 @@ export default () => (
     <T from={pico(GPIO.SDA)} to="U5.SDA" />
     <T from={pico(GPIO.SCL)} to="U5.SCL" />
     <T from={pico(GPIO.RTC_SQW)} to="U5.SQW" />
-    <resistor name="R2" resistance="10k" footprint={AXIAL_RES} />
+    <resistor name="R2" {...at("R2")} resistance="10k" footprint={AXIAL_RES} />
     <T from="R2.pin1" to="U5.SQW" />
     <T from="R2.pin2" to="net.V3_3" />
 
     {/* ---------- Charger status and battery sense ---------- */}
-    <resistor name="R3" resistance="100k" footprint={AXIAL_RES} />
-    <resistor name="R4" resistance="100k" footprint={AXIAL_RES} />
+    <resistor name="R3" {...at("R3")} resistance="100k" footprint={AXIAL_RES} />
+    <resistor name="R4" {...at("R4")} resistance="100k" footprint={AXIAL_RES} />
     <T from="J2.CHG" to={pico(GPIO.CHG)} />
     <T from="R3.pin1" to="J2.CHG" />
     <T from="R3.pin2" to="net.V3_3" />
@@ -162,9 +220,9 @@ export default () => (
     <T from="R4.pin2" to="net.V3_3" />
 
     {/* VBAT / 2 into ADC2: ~2 µA at 4.2 V */}
-    <resistor name="R5" resistance="1M" footprint={AXIAL_RES} />
-    <resistor name="R6" resistance="1M" footprint={AXIAL_RES} />
-    <capacitor name="C8" capacitance="100nF" footprint={CERAMIC} />
+    <resistor name="R5" {...at("R5")} resistance="1M" footprint={AXIAL_RES} />
+    <resistor name="R6" {...at("R6")} resistance="1M" footprint={AXIAL_RES} />
+    <capacitor name="C8" {...at("C8")} capacitance="100nF" footprint={CERAMIC} />
     <T from="J2.VBAT" to="net.VBAT" />
     <T from="R5.pin1" to="net.VBAT" />
     <T from="R5.pin2" to="net.VBAT_ADC" />
@@ -179,15 +237,18 @@ export default () => (
     <T from="J1.LED_H" to={pico(GPIO.LED_H)} />
     <T from="J1.SNS_M" to={pico(GPIO.SNS_M)} />
     <T from="J1.SNS_H" to={pico(GPIO.SNS_H)} />
-    <resistor name="R7" resistance="47k" footprint={AXIAL_RES} />
-    <resistor name="R8" resistance="47k" footprint={AXIAL_RES} />
+    {/* Pull-ups powered from GP13, not 3V3: sunlight can switch the
+        phototransistors on, and firmware drives GP13 low while asleep */}
+    <T from={pico(GPIO.SNS_PWR)} to="net.SNS_PWR" />
+    <resistor name="R7" {...at("R7")} resistance="47k" footprint={AXIAL_RES} />
+    <resistor name="R8" {...at("R8")} resistance="47k" footprint={AXIAL_RES} />
     <T from="R7.pin1" to="J1.SNS_M" />
-    <T from="R7.pin2" to="net.V3_3" />
+    <T from="R7.pin2" to="net.SNS_PWR" />
     <T from="R8.pin1" to="J1.SNS_H" />
-    <T from="R8.pin2" to="net.V3_3" />
+    <T from="R8.pin2" to="net.SNS_PWR" />
     {/* optional: fit only if the ADC readings are noisy */}
-    <capacitor name="C9" capacitance="100nF" footprint={CERAMIC} />
-    <capacitor name="C10" capacitance="100nF" footprint={CERAMIC} />
+    <capacitor name="C9" {...at("C9")} capacitance="100nF" footprint={CERAMIC} />
+    <capacitor name="C10" {...at("C10")} capacitance="100nF" footprint={CERAMIC} />
     <T from="C9.pin1" to="J1.SNS_M" />
     <T from="C9.pin2" to="net.GND" />
     <T from="C10.pin1" to="J1.SNS_H" />
@@ -196,10 +257,10 @@ export default () => (
     {/* ---------- Buttons: 1 kΩ series, 10 kΩ pull-up, 1 µF; BAT43 OR to BTN_WAKE ---------- */}
     {BUTTONS.map((b) => (
       <Fragment key={b.pad}>
-        <resistor name={b.series} resistance="1k" footprint={AXIAL_RES} />
-        <resistor name={b.pullup} resistance="10k" footprint={AXIAL_RES} />
-        <capacitor name={b.cap} capacitance="1uF" footprint={CERAMIC} />
-        <diode name={b.diode} footprint={SCHOTTKY_SIGNAL} manufacturerPartNumber="BAT43" />
+        <resistor name={b.series} {...at(b.series)} resistance="1k" footprint={AXIAL_RES} />
+        <resistor name={b.pullup} {...at(b.pullup)} resistance="10k" footprint={AXIAL_RES} />
+        <capacitor name={b.cap} {...at(b.cap)} capacitance="1uF" footprint={CERAMIC} />
+        <diode name={b.diode} {...at(b.diode)} footprint={SCHOTTKY_SIGNAL} manufacturerPartNumber="BAT43" />
         <T from={`J3.${b.pad}`} to={`${b.series}.pin1`} />
         <T from={`J3.${b.pad}`} to={`${b.diode}.cathode`} />
         <T from={`${b.series}.pin2`} to={pico(b.gpio)} />
@@ -210,7 +271,7 @@ export default () => (
         <T from={`${b.diode}.anode`} to="net.BTN_WAKE" />
       </Fragment>
     ))}
-    <resistor name="R17" resistance="100k" footprint={AXIAL_RES} />
+    <resistor name="R17" {...at("R17")} resistance="100k" footprint={AXIAL_RES} />
     <T from={pico(GPIO.BTN_WAKE)} to="net.BTN_WAKE" />
     <T from="R17.pin1" to="net.BTN_WAKE" />
     <T from="R17.pin2" to="net.V3_3" />
@@ -218,10 +279,10 @@ export default () => (
     {/* ---------- Test points ---------- */}
     {[
       ["TP1", "net.VBAT"], ["TP2", "net.LOAD"], ["TP3", "net.VSYS"], ["TP4", "net.V5_SW"],
-      ["TP5", "net.V3_3"], ["TP6", "net.GND"], ["TP7", pico(GPIO.SPARE)],
+      ["TP5", "net.V3_3"], ["TP6", "net.GND"], ["TP7", "net.SNS_PWR"],
     ].map(([name, to]) => (
       <Fragment key={name}>
-        <testpoint name={name} footprintVariant="through_hole" holeDiameter="1mm" padDiameter="2mm" />
+        <testpoint name={name} {...at(name)} footprintVariant="through_hole" holeDiameter="1mm" padDiameter="2mm" />
         <T from={`${name}.pin1`} to={to} />
       </Fragment>
     ))}

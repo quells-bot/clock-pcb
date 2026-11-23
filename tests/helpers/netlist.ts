@@ -53,3 +53,11 @@ export const netMembers = (cj: CJ, ref: string): string[] => {
     .filter((p) => p.source_port_id === id || map.areIdsConnected(id, p.source_port_id as string))
     .map((p) => `${comps.get(p.source_component_id as string) ?? "?"}.${p.name}`)
 }
+
+/** Render and wait for the autorouter to finish, as `tsci build` does. */
+export const renderCircuitRouted = async (el: ReactElement): Promise<CJ> => {
+  const circuit = new Circuit()
+  circuit.add(el)
+  await circuit.renderUntilSettled()
+  return circuit.getCircuitJson() as CJ
+}

@@ -19,7 +19,7 @@ export const GPIO = {
   CHG: 10, // active low
   PGOOD: 11, // active low
   BTN_WAKE: 12, // active low, any button
-  SPARE: 13,
+  SNS_PWR: 13, // powers both sensor pull-ups; low while asleep
   A_AIN1: 14,
   A_AIN2: 15,
   A_BIN1: 16,

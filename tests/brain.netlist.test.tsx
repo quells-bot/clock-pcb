@@ -94,10 +94,17 @@ describe("sensors", () => {
     ["J1.SNS_M", pico(GPIO.SNS_M)],
     ["J1.SNS_H", pico(GPIO.SNS_H)],
     ["J1.SNS_M", "R7.pin1"],
-    ["R7.pin2", "U1.3V3"],
+    ["R7.pin2", pico(GPIO.SNS_PWR)],
     ["J1.SNS_H", "R8.pin1"],
-    ["R8.pin2", "U1.3V3"],
+    ["R8.pin2", pico(GPIO.SNS_PWR)],
   ])
+
+  // Sunlight can turn the phototransistors on; with the pull-ups on a GPIO
+  // that firmware drives low in sleep, they can't draw from the 3V3 rail.
+  test("sensor pull-ups are not on the always-on 3V3 rail", () => {
+    expect(isConnected(cj, "R7.pin2", "U1.3V3")).toBe(false)
+    expect(isConnected(cj, "R8.pin2", "U1.3V3")).toBe(false)
+  })
 })
 
 describe("decoupling", () => {
@@ -166,7 +173,7 @@ describe("test points", () => {
     ["TP4.pin1", "U4.VOUT"],
     ["TP5.pin1", "U1.3V3"],
     ["TP6.pin1", "U1.GND1"],
-    ["TP7.pin1", pico(GPIO.SPARE)],
+    ["TP7.pin1", pico(GPIO.SNS_PWR)],
   ])
 })
 

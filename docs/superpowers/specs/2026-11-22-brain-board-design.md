@@ -171,7 +171,11 @@ signal right, and to make the modules easy to swap.
 
 ### Front-board sensors
 
-- SNS_M, SNS_H: 47 kΩ pull-up to 3V3, to ADC0/ADC1. Footprint for an
+- SNS_M, SNS_H: 47 kΩ pull-up to **GP13 (SNS_PWR)**, not 3V3, to ADC0/ADC1.
+  (User, after review.) Sunlight can switch the phototransistors on, and a
+  pull-up on the always-on rail would then draw up to 70 µA each, all day.
+  Firmware drives GP13 high only while homing and low otherwise. That also
+  lets firmware read ambient light with the LEDs off. Footprint for an
   optional 100 nF to GND on each (fit only if readings are noisy).
 - LED_M, LED_H: straight to a GPIO each (firmware sets 12 mA drive).
 - GND1, GND2: both to GND.
@@ -210,7 +214,7 @@ rest.
 | GP10 | Charger CHG |
 | GP11 | Charger PGOOD |
 | GP12 | BTN_WAKE (diode-OR of all buttons) |
-| GP13 | Spare (bring to a test pad) |
+| GP13 | SNS_PWR: sensor pull-ups (test pad TP7) |
 | GP14–GP17 | Driver 1 AIN1, AIN2, BIN1, BIN2 |
 | GP18–GP21 | Driver 2 AIN1, AIN2, BIN1, BIN2 |
 | GP22 | LED_H |
