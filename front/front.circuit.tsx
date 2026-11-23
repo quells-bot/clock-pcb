@@ -56,7 +56,7 @@ const resPin = (r: Frame, pin: 1 | 2) => {
 // Wire pads, left to right. Ordered to match where each wire comes from so
 // that no traces cross: B3 B4 A2 A1 down the left, the minute sensor down the
 // middle, A3 A4 B1 B2 down the right, then the hour sensor from the far right.
-const PAD_ORDER = [
+export const PAD_ORDER = [
   "B3", "B4", "A2", "A1",
   "LED_M", "SNS_M", "GND1",
   "A3", "A4", "B1", "B2",
