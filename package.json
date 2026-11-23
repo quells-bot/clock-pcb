@@ -15,6 +15,9 @@
     "snapshot": "tsci snapshot",
     "snapshot:update": "tsci snapshot --update",
     "start": "tsci dev",
+    "kicad:front": "tsci export front/front.circuit.tsx -f kicad_zip -o ../dist/front-kicad.zip",
+    "kicad:brain": "tsci export back/brain.circuit.tsx -f kicad_zip -o ../dist/brain-kicad.zip",
+    "kicad": "bun run kicad:front && bun run kicad:brain",
     "typecheck": "tsc --noEmit",
     "test": "bun test"
   },

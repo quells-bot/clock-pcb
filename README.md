@@ -14,7 +14,7 @@ bun install            # once
 tsci build --pcb-png   # build + render to dist/
 tsci dev               # interactive preview
 bun test               # netlist, footprint and PCB checks for the brain board
-tsci export front/front.circuit.tsx -f kicad_zip -o dist/front-kicad.zip
+bun run kicad          # KiCad zips for both boards, written to dist/
 ```
 
 ## Front board coordinates
