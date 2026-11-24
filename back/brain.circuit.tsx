@@ -29,51 +29,69 @@ const ELECTROLYTIC = "radial_p2.5mm_id0.9mm_od1.6mm" // 100 µF 16 V, ~0.6 mm le
 
 const pico = (n: number) => `U1.${gp(n)}`
 
+/**
+ * Module (socket outline centre) positions in board mm: [x, y, rotation].
+ * The Pico lies on its side with USB to the left edge, so GP14-21 sit at its
+ * right end facing up; the drivers are turned so their logic row faces down
+ * at the Pico and their motor row faces up at J1.
+ */
+const M = {
+  U1: [-18, 3, 90],
+  U2: [19, 27, 90],
+  U3: [-15, 27, 90],
+  U4: [41.5, 27, 0],
+  U5: [-36, -31, 0],
+  J1: [6, 43, 0],
+  J2: [31, -42, 0],
+  J3: [0, -42, 0],
+} as const
+const mod = (name: keyof typeof M) => ({ pcbX: M[name][0], pcbY: M[name][1], pcbRotation: M[name][2] })
+
 /** Placement of every small part: [x, y, rotation] in board mm (origin = centre) */
 const P: Record<string, [number, number, number]> = {
   D1: [38, 4, 0],
-  C1: [30, 12, 0],
+  C1: [38, 12, 0],
   R1: [46, 10, 90],
-  R2: [-36, -15, 0],
+  R2: [-36, -14, 0],
   R3: [36, -4, 0],
   R4: [36, -9, 0],
   R5: [36, -14, 0],
   R6: [36, -19, 0],
   C8: [36, -24, 0],
-  R7: [-20, 1, 90],
-  R8: [-16, 1, 90],
-  C9: [-11, 1, 90],
-  C10: [-5, 1, 90],
-  R9: [-20, -14, 90],
-  R10: [-16, -14, 90],
-  R11: [-12, -14, 90],
-  R12: [-8, -14, 90],
-  C11: [-2.5, -14, 90],
-  C12: [3.5, -14, 90],
-  C13: [9.5, -14, 90],
-  C14: [15.5, -14, 90],
-  R17: [20, -14, 90],
-  R13: [-20, -28, 90],
-  R14: [-16, -28, 90],
-  R15: [-12, -28, 90],
-  R16: [-8, -28, 90],
-  D2: [-4, -28, 90],
-  D3: [0, -28, 90],
-  D4: [4, -28, 90],
-  D5: [8, -28, 90],
-  C2: [-22, 39, 0],
-  C4: [-16, 39, 0],
-  C6: [-10, 39, 0],
-  C3: [2.5, 30, 90],
-  C5: [2.5, 24, 90],
-  C7: [2.5, 18, 90],
-  TP1: [47, -2, 0],
-  TP2: [47, -6, 0],
-  TP3: [47, -10, 0],
-  TP4: [47, -14, 0],
-  TP5: [47, -18, 0],
-  TP6: [47, -22, 0],
-  TP7: [47, -26, 0],
+  R7: [-46, 33, 90],
+  R8: [-42, 33, 90],
+  C9: [-45, 22, 90],
+  C10: [-39, 22, 90],
+  R9: [-21, -14, 90],
+  R10: [-17, -14, 90],
+  R11: [-13, -14, 90],
+  R12: [-9, -14, 90],
+  C11: [-3.5, -14, 90],
+  C12: [2.5, -14, 90],
+  C13: [8.5, -14, 90],
+  C14: [14.5, -14, 90],
+  R17: [19, -14, 90],
+  R13: [-16, -28, 90],
+  R14: [-12, -28, 90],
+  R15: [-8, -28, 90],
+  R16: [-4, -28, 90],
+  D2: [0, -28, 90],
+  D3: [4, -28, 90],
+  D4: [8, -28, 90],
+  D5: [12, -28, 90],
+  C2: [-31, 20, 90],
+  C4: [-31, 26, 90],
+  C6: [-31, 32, 90],
+  C3: [2, 21, 90],
+  C5: [2, 27, 90],
+  C7: [2, 33, 90],
+  TP1: [44, -2, 0],
+  TP2: [44, -6, 0],
+  TP3: [44, -10, 0],
+  TP4: [44, -14, 0],
+  TP5: [44, -18, 0],
+  TP6: [44, -22, 0],
+  TP7: [44, -26, 0],
 }
 
 /** pcbX/pcbY/pcbRotation props for a part from P */
@@ -146,21 +164,20 @@ export default () => (
     ))}
 
     {/* ---------- Modules ---------- */}
-    <Pico2 name="U1" pcbX={-36} pcbY={14.5} />
-    <TB6612Breakout name="U2" pcbX={-11} pcbY={22} />
-    <TB6612Breakout name="U3" pcbX={16} pcbY={22} />
-    <MiniBoost name="U4" pcbX={40} pcbY={26} />
-    <DS3231Breakout name="U5" pcbX={-36} pcbY={-30} />
+    <Pico2 name="U1" {...mod("U1")} />
+    <TB6612Breakout name="U2" {...mod("U2")} />
+    <TB6612Breakout name="U3" {...mod("U3")} />
+    <MiniBoost name="U4" {...mod("U4")} />
+    <DS3231Breakout name="U5" {...mod("U5")} />
 
     {/* ---------- Wire pads ---------- */}
-    <WirePads name="J1" pads={PAD_ORDER} pcbX={14} pcbY={42} />
-    <WirePads name="J2" pads={["LOAD", "GND", "VBAT", "CHG", "PGOOD"]} pcbX={32} pcbY={-40} />
+    <WirePads name="J1" pads={PAD_ORDER} {...mod("J1")} />
+    <WirePads name="J2" pads={["LOAD", "GND", "VBAT", "CHG", "PGOOD"]} {...mod("J2")} />
     <WirePads
       name="J3"
       pads={["HP", "HM", "MP", "MM", "GND"]}
       silk={["H+", "H-", "M+", "M-", "GND"]}
-      pcbX={2}
-      pcbY={-40}
+      {...mod("J3")}
     />
 
     {/* ---------- Power ---------- */}
@@ -321,10 +338,10 @@ export default () => (
     {/* ---------- Markings ---------- */}
     <silkscreentext text="CLOCK BRAIN" pcbX={-25} pcbY={-42.6} fontSize={1.2} />
     <silkscreentext text="Rev 1.0" pcbX={-25} pcbY={-44.8} fontSize={1.2} />
-    <silkscreentext text="CUT RTC LED JUMPER" pcbX={-36} pcbY={-24} fontSize={1} />
-    <silkscreentext text="5V_SW: NEVER TO VSYS" pcbX={42} pcbY={40.5} fontSize={1} />
-    <silkscreentext text="MOTOR A" pcbX={-10.4} pcbY={19} fontSize={1} />
-    <silkscreentext text="MOTOR B" pcbX={16.6} pcbY={19} fontSize={1} />
+    <silkscreentext text="CUT RTC LED JUMPER" pcbX={M.U5[0]} pcbY={M.U5[1] + 6} fontSize={1} />
+    <silkscreentext text="5V_SW: NEVER TO VSYS" pcbX={M.U4[0] + 2} pcbY={M.U4[1] + 14.5} fontSize={1} />
+    <silkscreentext text="MOTOR A" pcbX={M.U2[0] + 0.6} pcbY={M.U2[1] - 3} fontSize={1} />
+    <silkscreentext text="MOTOR B" pcbX={M.U3[0] + 0.6} pcbY={M.U3[1] - 3} fontSize={1} />
 
     {/* ---------- Test points ---------- */}
     {[

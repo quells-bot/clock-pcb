@@ -11,11 +11,11 @@ tsci export back/brain.circuit.tsx -f gerbers -o "$PWD/back/fab/clock-brain-rev1
 | --- | --- |
 | Board | 100 × 96 mm, 2 layers, 1.6 mm FR4, four M3 holes 4 mm in from the corners |
 | Traces | 0.3 mm on both layers (also the minimum) |
-| Vias | 158, 0.3 mm drill / 0.6 mm pad |
+| Vias | 52, 0.3 mm drill / 0.6 mm pad |
 | Plated holes | 187: 0.635 mm (26, ceramic caps), 0.8 mm (42, resistors and BAT43), 0.9 mm (2, C1), 1.0 mm (91, module sockets and test points), 1.2 mm (26, wire pads and 1N5817) |
 | Non-plated holes | 14: 2.1 mm (4, optional Pico screws), 3.0 mm (6, zip ties), 3.2 mm (4, M3) |
 | Parts | all through-hole, hand-soldered (ignore the paste layers and the pick-and-place file) |
-| DRC | KiCad: no unconnected items, no shorts. 7 via pairs sit 0.187–0.226 mm apart, under KiCad's 0.25 mm default but above PCBWay's 0.127 mm (5 mil) standard spacing. KiCad also flags the "5V_SW" text near the edge; that's a font-size artifact, the Gerber text ends 1.4 mm inside the edge |
+| DRC | KiCad: no unconnected items, no shorts, no copper clearance violations. KiCad flags the "5V_SW" text near the edge; that's a font-size artifact, the Gerber text ends 1.4 mm inside the edge |
 
 ## Tallest point (for sizing the housing)
 
